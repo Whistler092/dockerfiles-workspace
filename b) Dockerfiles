@@ -1,0 +1,5 @@
+Eliminar Imagenes
+
+docker rmi 
+
+ docker rmi -f $(docker images -q)
