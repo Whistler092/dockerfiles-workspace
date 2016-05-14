@@ -25,3 +25,5 @@ docker volume
  docker volume create --name prueba
  
  docker run -ti -v prueba:/prueba ubuntu bash 
+ 
+ docker run -ti -v /Users/ramiroandres/Dev/ramirobedoya.me/:/var/httpd/html/www ubuntu:trusty bash
