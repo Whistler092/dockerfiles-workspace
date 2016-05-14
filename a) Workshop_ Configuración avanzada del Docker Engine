@@ -84,12 +84,19 @@ EnvironmentFile=-/etc/default/docker
 ExecStart=/usr/bin/docker daemon $OPTIONS -H fd://
 
 
+Edito el archivo /etc/default/docker
+
+
 journalctl -u docker s
 
 docker daemon --log-level=debug
 
 
 -H tcp://0.0.0.0:2375 -H fd://
+
+Para evitar tener que escribirlo cada ves que se va a usar.
+
+export DOCKER_HOST="tcp://localhost:2375"
 
 
 
