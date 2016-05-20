@@ -1,0 +1,57 @@
+Microservicios con Docker
+
+
+docker compose
+
+    "Compose es una herramienta para crear y administrar aplicaciones multi-contenedor"
+    
+    -En una arquitectura de microservicios existen demasiados servicios, por ende múltiples componentes para correr.
+    -Resulta tedioso ejecutar docker run por cada componente y luego manualmente orquestar todo.
+    https://github.com/docker/compose/releases
+    
+    
+    docker-compose version 
+        docker-compose.yml 
+        define los servicios dentro de un archivo
+        
+       EJ:
+            web:                                (servicio)
+                build: .                        (ruta build)
+                command: python app.py          (comando inicio)
+                links:                          (link a contenedor)
+                    - redis
+            redis: 
+                image: redis                    (imagen)
+                
+    para iniciar la aplicación
+        
+        crear un archivo docker-compose.yml
+                web:
+                    build: .
+                    links:
+                        - redis
+                    ports:
+                        - "80:5000"
+                redis:
+                    image: redis
+
+        docker-compose build //Crea la imagen.
+        docker-compose up  //Sube las maquinas
+        
+    
+        correr en blackground 
+            docker-compose up -de
+            
+        Los nombre de los contenedores tendrán el formato
+            <proyecto>_<servicio>_<número>
+            
+        Logs
+            docker-compose logs 
+            docker-compose logs web
+            
+            
+        detener un docker-compose
+            docker-compose down
+            (Adicional también los elimina)
+            
+        
