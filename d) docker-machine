@@ -1,12 +1,75 @@
 download docker machine 
 https://github.com/docker/machine/releases/
 
+leer guia de referencia
+aprovisionar un engine de docker configurandolo libremente 
+
 type docker-machine
 //Donde Está
-
 
 docker-machine ls
 
 docker-machine version
 
+//configurar docker
+necesito tener que tener virtualbox instalado 
 
+
+docker-machine create -d virtualbox dockervirtual
+//Creando una maquina virtual de Virtualbox
+//Creando las llaves SSH
+//Bootea una imagen de linux
+
+
+docker-machine ls
+//Allí está dockervirtual
+//Allí se puede acceder a docker dedse el entorno virtual
+
+docker-machine ssh dockervirtual
+//Y allí ya se puede hacer todo 
+
+docker ps
+
+    //Veo todas las variables que necesito para poder conectarme a mi dockervirtual
+    docker-machine config dockervirtual
+    
+    //Conectarse usando determinados parametros 
+    docker $(docker-machine config dockervirtual) ps
+
+
+    //Manera en la cual yo devería definir las variables del entorno en el cliente
+    docker-machine env docker-virtual
+    
+        export DOCKER_TLS_VERIFY="1"
+        export DOCKER_HOST="tcp://192.168.99.101:2376"
+        export DOCKER_CERT_PATH="/Users/produccion2/.docker/machine/machines/dockervirtual"
+        export DOCKER_MACHINE_NAME="dockervirtual"
+        # Run this command to configure your shell: 
+        # eval $(docker-machine env dockervirtual) //Inyecta las variables en la maquina
+        
+        eval $(docker-machine env -u) //Desinstalarlas para volver al por defecto
+        
+Hay dos formas de conectarse a un host con docker-machine
+
+    usar docker-machine ssh
+    setear las variables de entorno para apuntar al host de docker
+    
+    Otra forma de ingresar
+    
+        $ /Users/produccion2/.docker/machine/machines/dockervirtual
+        $ docker-machine ip dockervirtual
+        192.168.99.101
+        //Especificamos la clave privada de id_rsa
+        $ ssh -i id_rsa docker@192.168.99.101
+        
+        
+Las maquinas virtuales pueden ser detenidas e iniciadas con el comando 
+
+    docker-machine stop/start/restart
+    
+    docker-machine inspect
+    
+    docker-machine rm
+    
+
+    
