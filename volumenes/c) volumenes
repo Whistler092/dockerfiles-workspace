@@ -1,0 +1,27 @@
+directorio persistente
+
+Los cambios en un volumen son excluidos cuando se guarda una imagen
+
+
+pueden estar mapeados en un directorio del host
+
+pueden compartirse entre contenedores
+
+
+Son Directorios estaticos.
+
+
+Comandos
+
+
+docker volume
+
+-docker volume create
+-docker volume ls
+-docker volume inspect
+-docker volume rm
+ 
+ 
+ docker volume create --name prueba
+ 
+ docker run -ti -v prueba:/prueba ubuntu bash 

@@ -1,0 +1,142 @@
+Configuración de TLS
+
+    -Si usa HTTP para conectarse. Usar protocolo TLS (Evolución del SSL)
+    -Utiliza criptografía de clave pública y privada para encriptar las conexiones.
+        -Servidor
+        -Cliente
+        -Entidad Cetificante
+    -Las claves son cifradas con certificados que son mantenidos y emitidos por una entidad confiable.
+    -Los certificados aseguran que el servidor es quien dice ser.
+    -La comunicación en consecuencia se encuentra encriptada y autenticada.
+    
+Configuración
+    -Docker Agrega autenticación, autorización y encriptación para conexiones a traves de la red.
+    -Las claves pueden ser distribuidas a clientes autorizados
+    -Usa OpenSSL
+    
+Pasos a Seguir.
+
+    1. Crear una autoridad de Certificación (CA)
+        Es necesario una clave privada y un certificado.
+            -localhost
+            -mkdir docker-ca
+            -//Crear una clave privada de la autoridad autorizante
+                -openssl genrsa -aes256 -out ca-key.pem 2048
+                -pass : capass
+            -//Crear un certificado que se utilizará el servidor como el cliente.
+                -openssl req -new - x509 -days 365 -key ca-key.pem -sha256 -out ca.pem
+    2. Configurar una clave privada del Servidor
+        El cliente tendrá su clave privada y el servidor también tendrá su clave privada
+        Todo el munddo tendrá su clave privada y solamente se compartirá su clave publica
+        -//Crear la clave en el servidor.
+            openssl genrsa -out server-key.pem 2048
+    3. Crear un requerimiento de firma (CSR) de certificado para el servidor
+        El servidor envia un requerimiento a la entidad autorizante, la entidad autorizante firma ese requerimiento y se lo devuelve al servidor.
+        El servidor puede utilizarlo.
+        -//Crear la firma CSR
+    4. Firmar la clave del servidor con el CSR mediante nuestro CA
+        Crear un archivo con  "subjectAltName = IP:127.0.0.1"  > extfile.cnf
+        Este archivo para decirle de que IP's el servidor podrá recibir requerimientos. Es .cnf porque es un archivo de Configuración
+        Si es un CloudServer, Poner la IP publica
+        
+        Firmar la clave del servidor.
+            openssl x509 -req -days 365 -in server.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out server-cert.pem -extfile -extfile.cnf
+            -days = 265 (Firma valida por 365 dias)
+            -in = server.csr (csr generado anteriormente)
+            -CA ca.pem  (Certificado del servidor)
+            -CAkey ca-key.pem (Clave privada de la entidad autorizante)
+            -CAcreateserial (Dice especificamente que está haciendo las credenciales para el servidor)
+            -out server-cert.pem  (Escribirlo en el server-cert.pem)
+            -extfile -extfile.cnf (Habilita las IP's a navegar)
+    5. Crear una clave privada y un CSR para el cliente.
+        Hacer lo mismo del servidor pero para el cliente.
+        
+        openssl genrsa -out client-key.pem 2048
+        Clave generada del cliente  
+    
+    6. Firmar la clave del cliente con el CSR mediante nuestro CA
+        /Es para que la Autoridad autorizante sepa quien soy.
+        openssl req -subj '/CN=client' -new -key client-key.pem -out client.csr
+       
+       /Firma
+       echo "extendedKeyUsage = clienteAuth" > extfile.cnf
+       Cuando estoy firmarndo el certificado digo que esto será especificamente para un cliente y no para un servidor 
+        
+       openssl x509 -days 365 -in client.csr -CA ca.pem -CAkey ca-key.pem 
+            -x509
+            -req (Requerimiento de firmado)
+            -days 365
+            -in client.csr  (CSR de nuestro cliente)
+            -CA ca.pem  (Certificado del servidor) Es para poder hacer las firmas
+            -CAkey ca-key.pem (Clave privada de la autoridad autorizante) 
+            -CAcreateserial (flag credencial)
+            -out client-cert.pem 
+            -extfile extfile.cnf
+        
+    7. Iniciar el demonio de docker con la opción de TLS y especificar la ubicación de la clave privada del CA, 
+        el certificado del servidor y la clave privada del servidor
+        &&  Configurar el cliente de docker para que utilice la clave privada del cliente y la clave privada del CA
+            
+            ASEGURANDO NUESTRAS CLAVES
+            1. Asegurarse que las claves del cliente y del servidor  sólo puedan ser leídas por el usuario actual.
+                chmod -v 0400 ca-key.pem client-key.pem server-key.pem
+            
+            2. Remover el acceso de escritura a todos los certificados
+                chmod -v 0444 ca.pem server-cert.pem client-cert.pem
+            
+            3. Crear la carpeta /etc/docker en caso de que no exista.
+            
+            4. Cambiar los permisos de la carpeta /etc/docker
+                sudo chmod <username>:docker /etc/docker
+                sudo chmod 700 /etc/docker
+            
+            5. Copiar las claves del servidor a la nueva carpeta
+                sudo cp ~/docker-ca/{ca,server-key,server-cert}.pem /etc/docker
+                
+            USANDO DOCKER CON TLS
+            
+            1. Matar el proceso de docker. 
+                Esto se hace primero buscando ps -fea | grep docker 
+                sudo kill $(pidof docker)
+                
+            2. Inicializar el demonio
+                sudo docker daemon -H tcp://0.0.0.0:2375 -tlsverify
+                    --tlscacert=/etc/docker/ca.pem
+                    --tlscert=/etc/docker/server-cert.pem
+                    --tlskey=/etc/docker/server-key.pem
+                    
+                Reiniciamos el demonio de docker en caso de ser necesario
+                sudo service docker restart
+                
+            3. Usamos las credenciales correspondientes en el cliente (Carpeta docker-ca)
+                
+                export DOCKER_HOST="tcp://localhost:2375"
+                //Para conectarse al servidor 
+                
+                //despues te aparece un error de verificación con TLS porque se está tratando de conectar a un demonio con TLS pero el cliente no.
+                
+                docker --tlsverify \
+                    --tlscacert=ca.pem \
+                    --tlscert=client-cert.pem \
+                    --tlskey=client-key.pem \
+                -H tcp://0.0.0.0:2375 \
+                
+                Tip para no especifcar todas las claves en el cliente.
+                Crear una carpeta .docker en el home del cliente
+                
+                copiar. 
+                    cp client-cert.pem client-key.pem ca.pem ~/.docker
+                    mv client-cert.pem cert.pem
+                    mv client-key.pem key.pem 
+                    
+                docker --tlsverify (Ya no es necesario especifcar los certificados) ps
+                
+                    Para omitir la bandera --tlsverify
+                    export DOCKER_TLS_VERIFY=1
+                    
+    
+    
+    
+            
+        
+        

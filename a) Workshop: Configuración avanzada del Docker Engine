@@ -1,0 +1,102 @@
+
+
+Notas del Curso
+
+
+ver versión del Sistema operativo
+lsb_release -a
+
+
+Si el sistema tiene el comando systemctl, significa que el sistema que gestiona demonios es systemd
+
+
+Ver si el demonio está corriendo Docker 
+
+service docker status
+
+
+docker daemon --help
+
+
+
+Docker inicia de 3 maneras
+
+Unix socket
+
+TCP/IP
+
+file scriptor
+
+
+Iniciar Docker 
+
+sudo docker daemon &
+
+fg ver el proceso que se está ejecutando 
+
+
+
+Iniciar desde el gestion de servicios 
+sudo service docker start
+
+
+
+Parámetros de inicio del docker engine
+
+Si ejecutamos el demonio de docker de manera interactiva, especificar los parámetros de inicio.
+sudo docker daemon [options] &
+
+en caso de usar "upstart" localizar el archivo en /etc/default/docker y modificar DDOCKER_OPTS 
+(sudo service docker restart  - es necesario despues )
+
+
+
+en "systemd" localizar el archivo docker.service (Y modificar el archivo refernciado por la propiedad EnvironmentFile)
+(Este es el que tiene esta maquina)
+como encontrarlo? 
+
+root@workspace-PVM:~# sudo service docker status
+● docker.service - Docker Application Container Engine
+   Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
+   Active: active (running) since jue 2016-05-12 12:18:59 COT; 3min 40s ago
+     Docs: https://docs.docker.com
+ Main PID: 22619 (docker)
+    Tasks: 19 (limit: 512)
+   Memory: 31.6M
+      CPU: 417ms
+   CGroup: /system.slice/docker.service
+           ├─22619 /usr/bin/docker daemon -H fd://
+           └─22627 docker-containerd -l /var/run/docker/libcontainerd/docker-containerd.sock --runtime docker-runc
+
+
+Editar el archivo 
+/lib/systemd/system/docker.service
+
+
+Y agregar la linea 
+
+EnvironmentFile=-/etc/default/docker
+
+
+MOdificar 
+EnvironmentFile=-/etc/default/docker
+#ExecStart=/usr/bin/docker daemon -H fd://
+ExecStart=/usr/bin/docker daemon $OPTIONS -H fd://
+
+
+journalctl -u docker s
+
+docker daemon --log-level=debug
+
+
+-H tcp://0.0.0.0:2375 -H fd://
+
+
+
+
+//Hacer que el docker imprima los logs
+
+
+
+
+
