@@ -1,0 +1,12 @@
+download docker machine 
+https://github.com/docker/machine/releases/
+
+type docker-machine
+//Donde Está
+
+
+docker-machine ls
+
+docker-machine version
+
+
