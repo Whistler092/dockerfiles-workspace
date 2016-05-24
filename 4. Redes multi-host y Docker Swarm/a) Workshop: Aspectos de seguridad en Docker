@@ -1,4 +1,3 @@
-
 Seguridad Avanzada
 
     Apparmor
@@ -11,8 +10,6 @@ Configuración de TLS
     Protocolo TLS / Evolución del SSL
     Utiliza Crptografía de clave pública y privada para encriptar las conexiones.
     
-    
-    
     REQUESITOS  
         Tener instalado OpenSSL
         
@@ -23,7 +20,6 @@ Configuración de TLS
         mkdir docker-ca //Credenciales
         //Crear una clave privada
         openssl genrsa -aes256 -out ca-key.pem 2048
-        //Contraseña : capass
-        
+        //Contraseña : capass        
         
         openssl req -new -x509 -days 265 -key ca-key.pem -sha256 -out ca.pem

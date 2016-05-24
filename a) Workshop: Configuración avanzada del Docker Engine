@@ -79,9 +79,13 @@ EnvironmentFile=-/etc/default/docker
 
 
 MOdificar 
-EnvironmentFile=-/etc/default/docker
 #ExecStart=/usr/bin/docker daemon -H fd://
+
+EnvironmentFile=-/etc/default/docker
 ExecStart=/usr/bin/docker daemon $OPTIONS -H fd://
+
+Modifico el archivo /etc/default/docker 
+  OPTIONS="--log-level=debug -H tcp://0.0.0.0:2375"
 
 
 journalctl -u docker s

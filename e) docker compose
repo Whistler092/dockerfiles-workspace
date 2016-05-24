@@ -54,4 +54,11 @@ docker compose
             docker-compose down
             (Adicional también los elimina)
             
+        // Cuando el nombre del archivo cambia
+        docker-compose -f compose.yml stop
         
+Escalando servicios con docker
+
+    docker-compose scale --help
+    
+    
